@@ -3,6 +3,7 @@ import { Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
 import { AvailabilityMap, Carpark } from '../types';
 import { lotsSummary } from '../utils/availability';
+import { COLORS, RADIUS } from '../styles/shared';
 
 interface Props {
   carpark: Carpark | null;
@@ -23,6 +24,7 @@ export function CarparkDetailsSheet({ carpark, availability, onClose }: Props) {
 
   return (
     <View style={styles.sheet}>
+      <View style={styles.handle} />
       <Text style={styles.title}>{carpark.carpark_name || carpark.carpark_id}</Text>
 
       <Row label="Type" value={carpark.carpark_type} />
@@ -43,10 +45,10 @@ export function CarparkDetailsSheet({ carpark, availability, onClose }: Props) {
       )}
 
       <View style={styles.buttonRow}>
-        <TouchableOpacity style={styles.navButton} onPress={handleNavigate}>
+        <TouchableOpacity style={styles.navButton} onPress={handleNavigate} activeOpacity={0.85}>
           <Text style={styles.navButtonText}>Navigate</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+        <TouchableOpacity style={styles.closeButton} onPress={onClose} activeOpacity={0.85}>
           <Text style={styles.closeButtonText}>Close</Text>
         </TouchableOpacity>
       </View>
@@ -70,69 +72,90 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     zIndex: 20,
-    backgroundColor: 'white',
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
-    padding: 16,
+    backgroundColor: COLORS.surface,
+    borderTopLeftRadius: RADIUS.lg,
+    borderTopRightRadius: RADIUS.lg,
+    paddingHorizontal: 20,
+    paddingTop: 10,
     paddingBottom: 28,
-    elevation: 6,
+    elevation: 8,
     shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: -3 },
+  },
+  handle: {
+    alignSelf: 'center',
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#d8d8d8',
+    marginBottom: 12,
   },
   title: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 8,
+    fontSize: 17,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 10,
   },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 2,
+    paddingVertical: 3,
   },
   label: {
-    fontWeight: '600',
     fontSize: 13,
+    color: COLORS.muted,
   },
   value: {
     fontSize: 13,
+    color: COLORS.text,
+    fontWeight: '500',
   },
   lotsBlock: {
-    marginTop: 6,
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
   },
   lotsTitle: {
-    fontWeight: '600',
+    fontWeight: '700',
     fontSize: 13,
+    color: COLORS.text,
+    marginBottom: 4,
   },
   lotLine: {
     fontSize: 13,
+    color: COLORS.muted,
     marginTop: 2,
   },
   buttonRow: {
     flexDirection: 'row',
     gap: 10,
-    marginTop: 14,
+    marginTop: 16,
   },
   navButton: {
     flex: 1,
-    backgroundColor: '#2a81cb',
-    borderRadius: 6,
-    paddingVertical: 12,
+    backgroundColor: COLORS.primary,
+    borderRadius: RADIUS.sm,
+    paddingVertical: 13,
     alignItems: 'center',
   },
   navButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
+    color: COLORS.surface,
+    fontWeight: '700',
+    fontSize: 14,
   },
   closeButton: {
     flex: 1,
-    backgroundColor: '#eee',
-    borderRadius: 6,
-    paddingVertical: 12,
+    backgroundColor: '#f0f0f0',
+    borderRadius: RADIUS.sm,
+    paddingVertical: 13,
     alignItems: 'center',
   },
   closeButtonText: {
-    fontWeight: 'bold',
+    fontWeight: '700',
+    fontSize: 14,
+    color: COLORS.text,
   },
 });

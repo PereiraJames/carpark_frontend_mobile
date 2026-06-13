@@ -15,6 +15,7 @@ import { StatusPill } from '../components/StatusPill';
 import { FOCUSED_DELTA, NEAREST_LIMIT } from '../config';
 import { useCarparkData } from '../hooks/useCarparkData';
 import { useUserLocation } from '../hooks/useUserLocation';
+import { BUTTON_GAP, BUTTON_SIZE } from '../styles/shared';
 import { Carpark, Coordinates } from '../types';
 import { haversineKm } from '../utils/distance';
 
@@ -162,6 +163,7 @@ export function MapScreen() {
   const shift = isOffline ? 36 : 0;
   const controlsTop = baseTop + shift;
   const statusTop = baseTop + 50 + shift;
+  const locateTop = controlsTop + BUTTON_SIZE + BUTTON_GAP;
 
   return (
     <View style={styles.container}>
@@ -181,7 +183,7 @@ export function MapScreen() {
         showNearestOnly={showNearestOnly}
         onToggleNearest={handleToggleNearest}
       />
-      <LocateButton bottom={insets.bottom + 90} active={!!userLocation} onPress={handleLocatePress} />
+      <LocateButton top={locateTop} active={!!userLocation} onPress={handleLocatePress} />
       <Legend />
 
       <CarparkDetailsSheet

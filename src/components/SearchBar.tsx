@@ -1,5 +1,8 @@
+import { MaterialIcons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+
+import { BUTTON_SIZE, CARD_SHADOW, COLORS, RADIUS } from '../styles/shared';
 
 interface Props {
   top: number;
@@ -20,14 +23,14 @@ export function SearchBar({ top, onSearch }: Props) {
       <TextInput
         style={styles.input}
         placeholder="Search for a destination (address or postal code)"
-        placeholderTextColor="#888"
+        placeholderTextColor={COLORS.muted}
         value={value}
         onChangeText={setValue}
         onSubmitEditing={handleSubmit}
         returnKeyType="search"
       />
-      <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-        <Text style={styles.buttonText}>Go</Text>
+      <TouchableOpacity style={styles.button} onPress={handleSubmit} activeOpacity={0.8}>
+        <MaterialIcons name="search" size={22} color={COLORS.text} />
       </TouchableOpacity>
     </View>
   );
@@ -40,35 +43,26 @@ const styles = StyleSheet.create({
     right: 130,
     zIndex: 10,
     flexDirection: 'row',
-    gap: 6,
+    gap: 8,
   },
   input: {
     flex: 1,
     minWidth: 0,
-    backgroundColor: 'white',
-    borderRadius: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.sm,
+    paddingHorizontal: 14,
     fontSize: 15,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 1 },
+    color: COLORS.text,
+    height: BUTTON_SIZE,
+    ...CARD_SHADOW,
   },
   button: {
-    backgroundColor: 'white',
-    borderRadius: 6,
-    paddingHorizontal: 14,
+    width: BUTTON_SIZE,
+    height: BUTTON_SIZE,
+    borderRadius: RADIUS.sm,
+    backgroundColor: COLORS.surface,
+    alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 44,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 1 },
-  },
-  buttonText: {
-    fontSize: 15,
+    ...CARD_SHADOW,
   },
 });

@@ -1,6 +1,8 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
+import { BUTTON_SIZE, CARD_SHADOW, COLORS, RADIUS } from '../styles/shared';
+
 interface Props {
   top: number;
   showNearestOnly: boolean;
@@ -13,6 +15,7 @@ export function ControlButtons({ top, showNearestOnly, onToggleNearest }: Props)
       <TouchableOpacity
         style={[styles.button, showNearestOnly && styles.buttonActive]}
         onPress={onToggleNearest}
+        activeOpacity={0.8}
       >
         <Text style={[styles.buttonText, showNearestOnly && styles.buttonTextActive]}>
           {showNearestOnly ? 'Show All' : 'Nearest 10'}
@@ -27,31 +30,27 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 10,
     zIndex: 10,
-    gap: 6,
   },
   button: {
-    backgroundColor: 'white',
-    borderRadius: 6,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.sm,
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    minHeight: 44,
-    minWidth: 44,
+    height: BUTTON_SIZE,
+    minWidth: BUTTON_SIZE,
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 1 },
+    ...CARD_SHADOW,
   },
   buttonActive: {
-    backgroundColor: '#2a81cb',
+    backgroundColor: COLORS.primary,
   },
   buttonText: {
-    fontSize: 15,
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.text,
     textAlign: 'center',
   },
   buttonTextActive: {
-    color: 'white',
+    color: COLORS.surface,
   },
 });

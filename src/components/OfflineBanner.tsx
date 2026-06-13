@@ -1,5 +1,8 @@
+import { MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+
+import { COLORS } from '../styles/shared';
 
 interface Props {
   visible: boolean;
@@ -11,6 +14,7 @@ export function OfflineBanner({ visible, top }: Props) {
 
   return (
     <View style={[styles.banner, { top }]}>
+      <MaterialIcons name="cloud-off" size={14} color={COLORS.surface} />
       <Text style={styles.text}>Offline Mode - Not connected to servers</Text>
     </View>
   );
@@ -22,13 +26,17 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     zIndex: 20,
-    backgroundColor: '#c0392b',
-    paddingVertical: 6,
+    backgroundColor: COLORS.danger,
+    paddingVertical: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
   },
   text: {
-    color: 'white',
+    color: COLORS.surface,
     textAlign: 'center',
     fontSize: 13,
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
 });

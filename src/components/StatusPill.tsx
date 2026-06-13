@@ -1,6 +1,8 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { CARD_SHADOW, COLORS, RADIUS } from '../styles/shared';
+
 interface Props {
   top: number;
   message: string;
@@ -19,17 +21,14 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 10,
     zIndex: 10,
-    backgroundColor: 'white',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 4,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 1 },
+    backgroundColor: COLORS.surface,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: RADIUS.sm,
+    ...CARD_SHADOW,
   },
   text: {
     fontSize: 13,
+    color: COLORS.text,
   },
 });

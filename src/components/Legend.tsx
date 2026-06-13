@@ -3,6 +3,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { DESTINATION_COLOR, TYPE_BORDER_COLORS } from '../config';
+import { CARD_SHADOW, COLORS, RADIUS } from '../styles/shared';
 
 const AVAILABILITY_ROWS: Array<{ color: string; label: string }> = [
   { color: '#2ecc71', label: 'Many lots' },
@@ -49,22 +50,21 @@ const styles = StyleSheet.create({
     bottom: 20,
     left: 10,
     zIndex: 10,
-    backgroundColor: 'white',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 4,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 1 },
+    backgroundColor: COLORS.surface,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: RADIUS.sm,
+    ...CARD_SHADOW,
   },
   title: {
-    fontWeight: 'bold',
-    fontSize: 12,
+    fontWeight: '700',
+    fontSize: 11,
+    color: COLORS.muted,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   titleSpaced: {
-    marginTop: 4,
+    marginTop: 6,
   },
   row: {
     flexDirection: 'row',
@@ -84,5 +84,6 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 12,
+    color: COLORS.text,
   },
 });
