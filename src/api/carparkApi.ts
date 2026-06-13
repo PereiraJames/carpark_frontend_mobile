@@ -45,6 +45,18 @@ export async function fetchLiveData(): Promise<LiveData> {
   return { allCarparks, availability };
 }
 
+/** Submit a user-reported issue (wrong info, closed, etc.) for a carpark. */
+export async function submitCarparkReport(carparkId: string, category: string, message: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/api/carpark_report`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ carpark_id: carparkId, category, message }),
+  });
+  if (!response.ok) {
+    throw new Error(`carpark_report request failed: ${response.status}`);
+  }
+}
+
 /** Resolve a free-text address or postal code to coordinates via the Google Geocoding API. */
 export async function geocodeAddress(query: string): Promise<Coordinates> {
   const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(

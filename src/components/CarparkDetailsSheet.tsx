@@ -1,9 +1,13 @@
-import React from 'react';
-import { Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
+import React, { useEffect, useState } from 'react';
+import { Linking, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
+import { submitCarparkReport } from '../api/carparkApi';
 import { AvailabilityMap, Carpark } from '../types';
 import { lotsSummary } from '../utils/availability';
 import { COLORS, RADIUS } from '../styles/shared';
+
+const REPORT_CATEGORIES = ['Wrong info', 'Closed', 'Other'];
 
 interface Props {
   carpark: Carpark | null;
@@ -13,6 +17,31 @@ interface Props {
 
 /** Bottom sheet shown when a carpark marker is tapped - replaces the web app's map popup. */
 export function CarparkDetailsSheet({ carpark, availability, onClose }: Props) {
+  const [reportOpen, setReportOpen] = useState(false);
+  const [category, setCategory] = useState<string | null>(null);
+  const [message, setMessage] = useState('');
+  const [reportStatus, setReportStatus] = useState<'idle' | 'submitting' | 'sent' | 'error'>('idle');
+
+  // Reset the report form whenever a different carpark is opened.
+  useEffect(() => {
+    setReportOpen(false);
+    setCategory(null);
+    setMessage('');
+    setReportStatus('idle');
+  }, [carpark?.carpark_id]);
+
+  // Collapse the form a couple seconds after a successful submission.
+  useEffect(() => {
+    if (reportStatus !== 'sent') return;
+    const timer = setTimeout(() => {
+      setReportOpen(false);
+      setReportStatus('idle');
+      setCategory(null);
+      setMessage('');
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [reportStatus]);
+
   if (!carpark) return null;
 
   const lots = lotsSummary(availability, carpark.carpark_id);
@@ -22,10 +51,77 @@ export function CarparkDetailsSheet({ carpark, availability, onClose }: Props) {
     Linking.openURL(url);
   };
 
+  const handleSubmitReport = async () => {
+    if (!category) return;
+    setReportStatus('submitting');
+    try {
+      await submitCarparkReport(carpark.carpark_id, category, message.trim());
+      setReportStatus('sent');
+    } catch (err) {
+      console.warn('Report submission failed:', err);
+      setReportStatus('error');
+    }
+  };
+
   return (
     <View style={styles.sheet}>
       <View style={styles.handle} />
-      <Text style={styles.title}>{carpark.carpark_name || carpark.carpark_id}</Text>
+
+      <View style={styles.titleRow}>
+        <Text style={styles.title}>{carpark.carpark_name || carpark.carpark_id}</Text>
+        <TouchableOpacity
+          style={styles.reportLink}
+          onPress={() => setReportOpen((open) => !open)}
+          activeOpacity={0.7}
+        >
+          <MaterialIcons name="flag" size={14} color={COLORS.muted} />
+          <Text style={styles.reportLinkText}>Report an issue</Text>
+        </TouchableOpacity>
+      </View>
+
+      {reportOpen && (
+        <View style={styles.reportBox}>
+          {reportStatus === 'sent' ? (
+            <Text style={styles.reportSentText}>Thanks - we've got your report.</Text>
+          ) : (
+            <>
+              <View style={styles.chipRow}>
+                {REPORT_CATEGORIES.map((opt) => (
+                  <TouchableOpacity
+                    key={opt}
+                    style={[styles.chip, category === opt && styles.chipActive]}
+                    onPress={() => setCategory(opt)}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={[styles.chipText, category === opt && styles.chipTextActive]}>{opt}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+              <TextInput
+                style={styles.reportInput}
+                placeholder="Add details (optional)"
+                placeholderTextColor={COLORS.muted}
+                value={message}
+                onChangeText={setMessage}
+                multiline
+              />
+              {reportStatus === 'error' && (
+                <Text style={styles.reportErrorText}>Something went wrong - please try again.</Text>
+              )}
+              <TouchableOpacity
+                style={[styles.reportSubmit, !category && styles.reportSubmitDisabled]}
+                onPress={handleSubmitReport}
+                disabled={!category || reportStatus === 'submitting'}
+                activeOpacity={0.85}
+              >
+                <Text style={styles.reportSubmitText}>
+                  {reportStatus === 'submitting' ? 'Sending...' : 'Submit report'}
+                </Text>
+              </TouchableOpacity>
+            </>
+          )}
+        </View>
+      )}
 
       <Row label="Type" value={carpark.carpark_type} />
       <Row label="Postal Code" value={carpark.postal_code || '-'} />
@@ -92,11 +188,100 @@ const styles = StyleSheet.create({
     backgroundColor: '#d8d8d8',
     marginBottom: 12,
   },
+  titleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 10,
+    gap: 10,
+  },
   title: {
+    flex: 1,
     fontSize: 17,
     fontWeight: '700',
     color: COLORS.text,
-    marginBottom: 10,
+  },
+  reportLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 4,
+    paddingHorizontal: 6,
+    marginTop: 2,
+  },
+  reportLinkText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.muted,
+  },
+  reportBox: {
+    backgroundColor: '#f7f7f7',
+    borderRadius: RADIUS.sm,
+    padding: 10,
+    marginBottom: 12,
+  },
+  chipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginBottom: 8,
+  },
+  chip: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: RADIUS.sm,
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  chipActive: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+  },
+  chipText: {
+    fontSize: 12,
+    color: COLORS.text,
+  },
+  chipTextActive: {
+    color: COLORS.surface,
+    fontWeight: '600',
+  },
+  reportInput: {
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.sm,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    padding: 8,
+    fontSize: 13,
+    minHeight: 44,
+    textAlignVertical: 'top',
+    color: COLORS.text,
+    marginBottom: 8,
+  },
+  reportSubmit: {
+    backgroundColor: COLORS.primary,
+    borderRadius: RADIUS.sm,
+    paddingVertical: 10,
+    alignItems: 'center',
+  },
+  reportSubmitDisabled: {
+    backgroundColor: '#ccc',
+  },
+  reportSubmitText: {
+    color: COLORS.surface,
+    fontWeight: '700',
+    fontSize: 13,
+  },
+  reportSentText: {
+    fontSize: 13,
+    color: COLORS.muted,
+    textAlign: 'center',
+    paddingVertical: 6,
+  },
+  reportErrorText: {
+    fontSize: 12,
+    color: COLORS.danger,
+    marginBottom: 6,
   },
   row: {
     flexDirection: 'row',
@@ -133,6 +318,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
     marginTop: 16,
+    marginBottom: 30,
   },
   navButton: {
     flex: 1,
