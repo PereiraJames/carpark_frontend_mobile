@@ -1,11 +1,19 @@
+import { MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+
+import { DESTINATION_COLOR, TYPE_BORDER_COLORS } from '../config';
 
 const AVAILABILITY_ROWS: Array<{ color: string; label: string }> = [
   { color: '#2ecc71', label: 'Many lots' },
   { color: '#f39c12', label: 'Few lots' },
   { color: '#e74c3c', label: 'Full' },
   { color: '#999999', label: 'Unknown' },
+];
+
+const TYPE_ROWS: Array<{ border: string; label: string }> = [
+  { border: TYPE_BORDER_COLORS.HDB, label: 'HDB' },
+  { border: TYPE_BORDER_COLORS.LTA, label: 'LTA' },
 ];
 
 export function Legend() {
@@ -18,6 +26,19 @@ export function Legend() {
           <Text style={styles.label}>{label}</Text>
         </View>
       ))}
+
+      <Text style={[styles.title, styles.titleSpaced]}>Type (border)</Text>
+      {TYPE_ROWS.map(({ border, label }) => (
+        <View key={label} style={styles.row}>
+          <View style={[styles.swatch, { backgroundColor: '#fff', borderColor: border }]} />
+          <Text style={styles.label}>{label}</Text>
+        </View>
+      ))}
+
+      <View style={styles.row}>
+        <MaterialIcons name="place" size={16} color={DESTINATION_COLOR} style={styles.pin} />
+        <Text style={styles.label}>Destination</Text>
+      </View>
     </View>
   );
 }
@@ -56,6 +77,10 @@ const styles = StyleSheet.create({
     height: 12,
     borderRadius: 6,
     borderWidth: 2,
+  },
+  pin: {
+    width: 12,
+    textAlign: 'center',
   },
   label: {
     fontSize: 12,

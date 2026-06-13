@@ -15,6 +15,15 @@ export const OFFLINE_POLL_MS = 10000;
 /** Number of carparks shown when "Nearest" mode is active. */
 export const NEAREST_LIMIT = 10;
 
+/** Marker border colour by carpark type. */
+export const TYPE_BORDER_COLORS: Record<string, string> = {
+  HDB: '#2a81cb',
+  LTA: '#8e44ad',
+};
+
+/** Colour of the destination pin. */
+export const DESTINATION_COLOR = '#d32f2f';
+
 /** Initial map region: Singapore, wide enough to show the whole island. */
 export const DEFAULT_REGION = {
   latitude: 1.3521,

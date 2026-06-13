@@ -1,5 +1,5 @@
 import React from 'react';
-import { Linking, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { AvailabilityMap, Carpark } from '../types';
 import { lotsSummary } from '../utils/availability';
@@ -22,38 +22,35 @@ export function CarparkDetailsSheet({ carpark, availability, onClose }: Props) {
   };
 
   return (
-    <Modal animationType="slide" transparent visible onRequestClose={onClose}>
-      <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose} />
-      <View style={styles.sheet}>
-        <Text style={styles.title}>{carpark.carpark_name || carpark.carpark_id}</Text>
+    <View style={styles.sheet}>
+      <Text style={styles.title}>{carpark.carpark_name || carpark.carpark_id}</Text>
 
-        <Row label="Type" value={carpark.carpark_type} />
-        <Row label="Postal Code" value={carpark.postal_code || '-'} />
-        <Row label="Weekday Rate" value={carpark.weekdays_rate_1 || '-'} />
-        <Row label="Saturday Rate" value={carpark.saturday_rate || '-'} />
-        <Row label="Sunday / PH Rate" value={carpark.sunday_publicholiday_rate || '-'} />
+      <Row label="Type" value={carpark.carpark_type} />
+      <Row label="Postal Code" value={carpark.postal_code || '-'} />
+      <Row label="Weekday Rate" value={carpark.weekdays_rate_1 || '-'} />
+      <Row label="Saturday Rate" value={carpark.saturday_rate || '-'} />
+      <Row label="Sunday / PH Rate" value={carpark.sunday_publicholiday_rate || '-'} />
 
-        {lots && (
-          <View style={styles.lotsBlock}>
-            <Text style={styles.lotsTitle}>Lots Available</Text>
-            {lots.map((line) => (
-              <Text key={line} style={styles.lotLine}>
-                {line}
-              </Text>
-            ))}
-          </View>
-        )}
-
-        <View style={styles.buttonRow}>
-          <TouchableOpacity style={styles.navButton} onPress={handleNavigate}>
-            <Text style={styles.navButtonText}>Navigate</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <Text style={styles.closeButtonText}>Close</Text>
-          </TouchableOpacity>
+      {lots && (
+        <View style={styles.lotsBlock}>
+          <Text style={styles.lotsTitle}>Lots Available</Text>
+          {lots.map((line) => (
+            <Text key={line} style={styles.lotLine}>
+              {line}
+            </Text>
+          ))}
         </View>
+      )}
+
+      <View style={styles.buttonRow}>
+        <TouchableOpacity style={styles.navButton} onPress={handleNavigate}>
+          <Text style={styles.navButtonText}>Navigate</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+          <Text style={styles.closeButtonText}>Close</Text>
+        </TouchableOpacity>
       </View>
-    </Modal>
+    </View>
   );
 }
 
@@ -67,20 +64,22 @@ function Row({ label, value }: { label: string; value: string | number | null | 
 }
 
 const styles = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-  },
   sheet: {
     position: 'absolute',
     left: 0,
     right: 0,
     bottom: 0,
+    zIndex: 20,
     backgroundColor: 'white',
     borderTopLeftRadius: 12,
     borderTopRightRadius: 12,
     padding: 16,
     paddingBottom: 28,
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: -2 },
   },
   title: {
     fontSize: 16,

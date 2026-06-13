@@ -1,3 +1,4 @@
+import { TYPE_BORDER_COLORS } from '../config';
 import { AvailabilityMap, LotInfo } from '../types';
 
 export interface AvailabilitySummary {
@@ -36,4 +37,9 @@ export function lotsSummary(availability: AvailabilityMap, carparkId: string): s
   const entry = availability[carparkId];
   if (!entry || !entry.carpark_info) return null;
   return entry.carpark_info.map((info) => `${info.lot_type}: ${info.lots_available}/${info.total_lots}`);
+}
+
+/** Marker border colour by carpark type (HDB/LTA/other). */
+export function typeBorderColor(type: string | undefined): string {
+  return (type && TYPE_BORDER_COLORS[type]) || '#333333';
 }

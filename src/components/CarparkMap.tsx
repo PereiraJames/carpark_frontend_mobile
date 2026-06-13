@@ -1,10 +1,11 @@
+import { MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
-import { Platform, StyleSheet } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 
-import { DEFAULT_REGION } from '../config';
+import { DEFAULT_REGION, DESTINATION_COLOR, NEAREST_LIMIT } from '../config';
 import { Carpark, Coordinates, AvailabilityMap } from '../types';
-import { availabilityColor } from '../utils/availability';
+import { availabilityColor, typeBorderColor } from '../utils/availability';
 
 interface Props {
   mapRef: React.RefObject<MapView | null>;
@@ -21,6 +22,11 @@ export function CarparkMap({
   destinationLocation,
   onMarkerPress,
 }: Props) {
+  // Coloured pips (occupancy fill + carpark-type border) are only used for the
+  // short "nearest" lists. Rendering thousands of custom-view markers for
+  // "Show All" causes severe lag, so that case falls back to plain pins.
+  const useDetailedPips = carparks.length <= NEAREST_LIMIT;
+
   return (
     <MapView
       ref={mapRef}
@@ -32,21 +38,44 @@ export function CarparkMap({
       showsUserLocation
       showsMyLocationButton={false}
     >
-      {carparks.map((cp) => (
-        <Marker
-          key={cp.carpark_id}
-          coordinate={{ latitude: parseFloat(String(cp.lat)), longitude: parseFloat(String(cp.lon)) }}
-          pinColor={availabilityColor(availability, cp.carpark_id)}
-          title={cp.carpark_name || cp.carpark_id}
-          onPress={() => onMarkerPress(cp)}
-        />
-      ))}
+      {carparks.map((cp) => {
+        const coordinate = { latitude: parseFloat(String(cp.lat)), longitude: parseFloat(String(cp.lon)) };
+        const fill = availabilityColor(availability, cp.carpark_id);
+
+        if (!useDetailedPips) {
+          return (
+            <Marker
+              key={cp.carpark_id}
+              coordinate={coordinate}
+              pinColor={fill}
+              title={cp.carpark_name || cp.carpark_id}
+              onPress={() => onMarkerPress(cp)}
+            />
+          );
+        }
+
+        const border = typeBorderColor(cp.carpark_type);
+        return (
+          <Marker
+            key={`${cp.carpark_id}-${fill}-${border}`}
+            coordinate={coordinate}
+            anchor={{ x: 0.5, y: 0.5 }}
+            title={cp.carpark_name || cp.carpark_id}
+            onPress={() => onMarkerPress(cp)}
+          >
+            <View style={[styles.dot, { backgroundColor: fill, borderColor: border }]} />
+          </Marker>
+        );
+      })}
 
       {destinationLocation && (
         <Marker
           coordinate={{ latitude: destinationLocation.lat, longitude: destinationLocation.lon }}
+          anchor={{ x: 0.5, y: 1 }}
           title="Destination"
-        />
+        >
+          <MaterialIcons name="place" size={36} color={DESTINATION_COLOR} />
+        </Marker>
       )}
     </MapView>
   );
@@ -55,5 +84,11 @@ export function CarparkMap({
 const styles = StyleSheet.create({
   map: {
     flex: 1,
+  },
+  dot: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 3,
   },
 });
