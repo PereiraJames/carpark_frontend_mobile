@@ -6,20 +6,22 @@ import { loadCachedData, saveCachedData } from '../storage/cache';
 import { AvailabilityMap, Carpark } from '../types';
 
 /**
- * Loads carpark details + live availability, polls for updates, and falls
- * back to the last cached copy (via AsyncStorage) whenever the backend is
- * unreachable - mirrors the offline behaviour of the web app.
+ * Cache-first data loading: on open, immediately shows the last cached
+ * carparks (assuming offline), then pings the backend in the background.
+ * A successful ping replaces the displayed data with the fresh copy, saves
+ * it to the cache, and marks the app online; a failed ping just leaves the
+ * cached copy on screen.
  */
 export function useCarparkData() {
   const [allCarparks, setAllCarparks] = useState<Carpark[]>([]);
   const [availability, setAvailability] = useState<AvailabilityMap>({});
-  const [isOffline, setIsOffline] = useState(false);
+  const [isOffline, setIsOffline] = useState(true);
   const [loadStatus, setLoadStatus] = useState('Loading carparks...');
 
   // Mirrors of state for the poll loop, so it always sees the latest values
   // without having to be re-created (and re-scheduled) on every update.
   const allCarparksRef = useRef<Carpark[]>([]);
-  const isOfflineRef = useRef(false);
+  const isOfflineRef = useRef(true);
 
   useEffect(() => {
     allCarparksRef.current = allCarparks;
@@ -38,17 +40,12 @@ export function useCarparkData() {
       setIsOffline(false);
       setLoadStatus(`${data.allCarparks.length} carparks loaded`);
     } catch (err) {
-      console.warn('Failed to load live carpark data, trying cache:', err);
-      const cached = await loadCachedData();
-      if (cached.allCarparks) {
-        setAllCarparks(cached.allCarparks);
-        setAvailability(cached.availability || {});
-        setIsOffline(true);
-        setLoadStatus(`${cached.allCarparks.length} carparks loaded (cached)`);
-      } else {
-        setIsOffline(true);
-        setLoadStatus('Offline and no cached data available');
-      }
+      console.warn('Failed to load live carpark data:', err);
+      setIsOffline(true);
+      const cachedCount = allCarparksRef.current.length;
+      setLoadStatus(
+        cachedCount > 0 ? `${cachedCount} carparks loaded (cached)` : 'Offline and no cached data available'
+      );
     }
   }, []);
 
@@ -64,10 +61,10 @@ export function useCarparkData() {
     }
   }, []);
 
-  // Poll the backend for fresh data. While online, this just refreshes
-  // availability on the normal cadence; while offline (or before the first
-  // successful load), it retries the full load more often so the app
-  // recovers as soon as the connection comes back.
+  // Hydrate from cache first (instant, assumed offline), then poll the
+  // backend for fresh data. While online, polling just refreshes
+  // availability on the normal cadence; while offline, it retries the full
+  // load more often so the app recovers as soon as the connection comes back.
   useEffect(() => {
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -82,7 +79,18 @@ export function useCarparkData() {
       timer = setTimeout(poll, isOfflineRef.current ? OFFLINE_POLL_MS : ONLINE_POLL_MS);
     };
 
-    poll();
+    const init = async () => {
+      const cached = await loadCachedData();
+      if (!cancelled && cached.allCarparks) {
+        setAllCarparks(cached.allCarparks);
+        setAvailability(cached.availability || {});
+        setLoadStatus(`${cached.allCarparks.length} carparks loaded (cached)`);
+      }
+      if (cancelled) return;
+      await poll();
+    };
+
+    init();
 
     return () => {
       cancelled = true;
