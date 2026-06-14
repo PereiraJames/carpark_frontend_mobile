@@ -6,7 +6,7 @@ const LOCATION_PERMISSION_MESSAGE = 'Carpark uses your location to show the near
 
 module.exports = {
   expo: {
-    name: 'Carpark',
+    name: 'PearPark',
     slug: 'carpark-mobile',
     version: '1.0.0',
     orientation: 'portrait',
