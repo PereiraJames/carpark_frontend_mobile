@@ -41,5 +41,7 @@ yarn-error.*
 /ios
 /android
 
-# Stale build artifacts
+# build artifacts
 apk-build/
+*.apk
+*.aab

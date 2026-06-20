@@ -53,6 +53,14 @@ module.exports = {
           locationWhenInUsePermission: LOCATION_PERMISSION_MESSAGE,
         },
       ],
+      [
+        'expo-build-properties',
+        {
+          android: {
+            usesCleartextTraffic: true,
+          },
+        },
+      ],
     ],
   },
 };

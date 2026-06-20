@@ -4,10 +4,14 @@ setlocal
 cd /d "%~dp0"
 
 set BUILD_TYPE=%1
-if "%BUILD_TYPE%"=="" set BUILD_TYPE=release
+if "%BUILD_TYPE%"=="" set BUILD_TYPE=debug
+
+set ABI=%2
+set GRADLE_ABI_ARG=
+if not "%ABI%"=="" set GRADLE_ABI_ARG=-PreactNativeArchitectures=%ABI%
 
 if not exist android (
-    echo === Generating native android project (expo prebuild) ===
+    echo === Generating native android project via expo prebuild ===
     call npx expo prebuild --platform android --non-interactive
     if errorlevel 1 (
         echo Prebuild failed.
@@ -19,9 +23,9 @@ echo === Building %BUILD_TYPE% APK ===
 cd android
 
 if /i "%BUILD_TYPE%"=="debug" (
-    call .\gradlew.bat assembleDebug --no-daemon
+    call .\gradlew.bat assembleDebug %GRADLE_ABI_ARG% --no-daemon
 ) else (
-    call .\gradlew.bat assembleRelease --no-daemon
+    call .\gradlew.bat assembleRelease %GRADLE_ABI_ARG% --no-daemon
 )
 
 if errorlevel 1 (
