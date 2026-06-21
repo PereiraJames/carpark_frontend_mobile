@@ -47,7 +47,7 @@ export function Legend() {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    bottom: 20,
+    bottom: 60,
     left: 10,
     zIndex: 10,
     backgroundColor: COLORS.surface,

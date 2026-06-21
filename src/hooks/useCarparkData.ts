@@ -43,8 +43,11 @@ export function useCarparkData() {
       console.warn('Failed to load live carpark data:', err);
       setIsOffline(true);
       const cachedCount = allCarparksRef.current.length;
+      const errMessage = err instanceof Error ? err.message : String(err);
       setLoadStatus(
-        cachedCount > 0 ? `${cachedCount} carparks loaded (cached)` : 'Offline and no cached data available'
+        cachedCount > 0
+          ? `${cachedCount} carparks loaded (cached) - ${errMessage}`
+          : `Offline: ${errMessage}`
       );
     }
   }, []);

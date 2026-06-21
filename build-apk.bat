@@ -20,6 +20,20 @@ if not exist android (
 )
 
 echo === Building %BUILD_TYPE% APK ===
+
+rem Force the JS bundle to be regenerated so .env changes always take effect.
+rem Gradle's bundle task doesn't track .env as an input, so it can otherwise
+rem stay cached and skip re-bundling even after env values change.
+if /i "%BUILD_TYPE%"=="debug" (
+    set BUILD_TYPE_CAP=Debug
+) else (
+    set BUILD_TYPE_CAP=Release
+)
+set BUNDLE_CACHE_DIR_1=android\app\build\generated\assets\createBundle%BUILD_TYPE_CAP%JsAndAssets
+set BUNDLE_CACHE_DIR_2=android\app\build\intermediates\assets\%BUILD_TYPE%\merge%BUILD_TYPE_CAP%Assets
+if exist "%BUNDLE_CACHE_DIR_1%" rmdir /s /q "%BUNDLE_CACHE_DIR_1%"
+if exist "%BUNDLE_CACHE_DIR_2%" rmdir /s /q "%BUNDLE_CACHE_DIR_2%"
+
 cd android
 
 if /i "%BUILD_TYPE%"=="debug" (
