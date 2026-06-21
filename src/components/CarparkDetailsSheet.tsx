@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Linking, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import { submitCarparkReport } from '../api/carparkApi';
+import { useRelativeTime } from '../hooks/useRelativeTime';
 import { AvailabilityMap, Carpark } from '../types';
 import { lotsSummary } from '../utils/availability';
 import { COLORS, RADIUS } from '../styles/shared';
@@ -12,11 +13,12 @@ const REPORT_CATEGORIES = ['Wrong info', 'Closed', 'Other'];
 interface Props {
   carpark: Carpark | null;
   availability: AvailabilityMap;
+  lastUpdated: Date | null;
   onClose: () => void;
 }
 
 /** Bottom sheet shown when a carpark marker is tapped - replaces the web app's map popup. */
-export function CarparkDetailsSheet({ carpark, availability, onClose }: Props) {
+export function CarparkDetailsSheet({ carpark, availability, lastUpdated, onClose }: Props) {
   const [reportOpen, setReportOpen] = useState(false);
   const [category, setCategory] = useState<string | null>(null);
   const [message, setMessage] = useState('');
@@ -41,6 +43,8 @@ export function CarparkDetailsSheet({ carpark, availability, onClose }: Props) {
     }, 2000);
     return () => clearTimeout(timer);
   }, [reportStatus]);
+
+  const lotsUpdatedLabel = useRelativeTime(lastUpdated);
 
   if (!carpark) return null;
 
@@ -131,7 +135,10 @@ export function CarparkDetailsSheet({ carpark, availability, onClose }: Props) {
 
       {lots && (
         <View style={styles.lotsBlock}>
-          <Text style={styles.lotsTitle}>Lots Available</Text>
+          <View style={styles.lotsHeaderRow}>
+            <Text style={styles.lotsTitle}>Lots Available</Text>
+            {lotsUpdatedLabel && <Text style={styles.lotsUpdated}>Updated {lotsUpdatedLabel}</Text>}
+          </View>
           {lots.map((line) => (
             <Text key={line} style={styles.lotLine}>
               {line}
@@ -303,11 +310,20 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#f0f0f0',
   },
+  lotsHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'baseline',
+    marginBottom: 4,
+  },
   lotsTitle: {
     fontWeight: '700',
     fontSize: 13,
     color: COLORS.text,
-    marginBottom: 4,
+  },
+  lotsUpdated: {
+    fontSize: 11,
+    color: COLORS.muted,
   },
   lotLine: {
     fontSize: 13,

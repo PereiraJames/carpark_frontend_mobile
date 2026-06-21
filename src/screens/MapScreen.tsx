@@ -10,6 +10,7 @@ import { ControlButtons } from '../components/ControlButtons';
 import { Legend } from '../components/Legend';
 import { LocateButton } from '../components/LocateButton';
 import { OfflineBanner } from '../components/OfflineBanner';
+import { RefreshButton } from '../components/RefreshButton';
 import { SearchBar } from '../components/SearchBar';
 import { StatusPill } from '../components/StatusPill';
 import { FOCUSED_DELTA, NEAREST_LIMIT } from '../config';
@@ -23,7 +24,8 @@ export function MapScreen() {
   const insets = useSafeAreaInsets();
   const mapRef = useRef<MapView>(null);
   const { getCurrentCoords } = useUserLocation();
-  const { allCarparks, availability, isOffline, loadStatus } = useCarparkData();
+  const { allCarparks, availability, isOffline, loadStatus, isRefreshing, lastUpdated, manualRefresh } =
+    useCarparkData();
 
   const [showNearestOnly, setShowNearestOnly] = useState(true);
   const [userLocation, setUserLocation] = useState<Coordinates | null>(null);
@@ -164,6 +166,7 @@ export function MapScreen() {
   const controlsTop = baseTop + shift;
   const statusTop = baseTop + 50 + shift;
   const locateTop = controlsTop + BUTTON_SIZE + BUTTON_GAP;
+  const refreshTop = locateTop + BUTTON_SIZE + BUTTON_GAP;
 
   return (
     <View style={styles.container}>
@@ -184,11 +187,13 @@ export function MapScreen() {
         onToggleNearest={handleToggleNearest}
       />
       <LocateButton top={locateTop} active={!!userLocation} onPress={handleLocatePress} />
+      <RefreshButton top={refreshTop} refreshing={isRefreshing} onPress={manualRefresh} />
       <Legend />
 
       <CarparkDetailsSheet
         carpark={selectedCarpark}
         availability={availability}
+        lastUpdated={lastUpdated}
         onClose={() => setSelectedCarpark(null)}
       />
     </View>

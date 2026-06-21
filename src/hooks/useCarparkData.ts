@@ -17,6 +17,8 @@ export function useCarparkData() {
   const [availability, setAvailability] = useState<AvailabilityMap>({});
   const [isOffline, setIsOffline] = useState(true);
   const [loadStatus, setLoadStatus] = useState('Loading carparks...');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   // Mirrors of state for the poll loop, so it always sees the latest values
   // without having to be re-created (and re-scheduled) on every update.
@@ -38,31 +40,46 @@ export function useCarparkData() {
       setAvailability(data.availability);
       await saveCachedData(data.allCarparks, data.availability);
       setIsOffline(false);
+      setLastUpdated(new Date());
       setLoadStatus(`${data.allCarparks.length} carparks loaded`);
     } catch (err) {
       console.warn('Failed to load live carpark data:', err);
       setIsOffline(true);
       const cachedCount = allCarparksRef.current.length;
-      const errMessage = err instanceof Error ? err.message : String(err);
       setLoadStatus(
-        cachedCount > 0
-          ? `${cachedCount} carparks loaded (cached) - ${errMessage}`
-          : `Offline: ${errMessage}`
+        cachedCount > 0 ? `${cachedCount} carparks loaded (cached)` : 'Offline and no cached data available'
       );
     }
   }, []);
 
+  // Refreshes just the availability counts (not the full carpark list/details),
+  // used by both the background poll and the user-triggered manual refresh.
   const refreshAvailability = useCallback(async () => {
+    setIsRefreshing(true);
     try {
       const avail = await fetchCarparkAvailability();
       setAvailability(avail);
       await saveCachedData(allCarparksRef.current, avail);
       setIsOffline(false);
+      setLastUpdated(new Date());
     } catch (err) {
       console.warn('Failed to refresh availability:', err);
       setIsOffline(true);
+    } finally {
+      setIsRefreshing(false);
     }
   }, []);
+
+  // Manual refresh trigger for the UI: refreshes availability only, unless
+  // nothing has loaded yet (then there's nothing to refresh against, so it
+  // falls back to a full load instead).
+  const manualRefresh = useCallback(async () => {
+    if (allCarparksRef.current.length === 0) {
+      await loadCarparkData();
+    } else {
+      await refreshAvailability();
+    }
+  }, [loadCarparkData, refreshAvailability]);
 
   // Hydrate from cache first (instant, assumed offline), then poll the
   // backend for fresh data. While online, polling just refreshes
@@ -101,5 +118,5 @@ export function useCarparkData() {
     };
   }, [loadCarparkData, refreshAvailability]);
 
-  return { allCarparks, availability, isOffline, loadStatus };
+  return { allCarparks, availability, isOffline, loadStatus, isRefreshing, lastUpdated, manualRefresh };
 }
